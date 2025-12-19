@@ -32,7 +32,7 @@
         function update() {
             // ബ്രൗസർ ഡാറ്റ ബ്ലോക്ക് ചെയ്യുന്നത് ഒഴിവാക്കാൻ ടൈംസ്റ്റാമ്പ് ചേർക്കുന്നു
             // ഇങ്ങനെ മാറ്റുക
-                 fetch('http://127.0.0.1:5000/signal')
+                 fetch('/signal')
                 .then(res => res.json())
                 .then(data => {
                     if(data.next_period) {
@@ -56,4 +56,5 @@
         update();
     </script>
 </body>
+
 </html>
