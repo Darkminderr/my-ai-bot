@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SURE WIN AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+        .box { border: 2px solid #00ff88; border-radius: 20px; padding: 20px; max-width: 350px; margin: 20px auto; background: #111; box-shadow: 0 0 20px #00ff88; }
+        .btn { font-size: 50px; font-weight: bold; padding: 20px; border-radius: 15px; margin: 20px 0; background: #00ff44; color: #000; display: block; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; background: #111; }
+        th, td { border: 1px solid #333; padding: 12px; font-size: 14px; text-align: center; }
+        th { color: #00ff88; }
+        .win { color: #00ff44; font-weight: bold; }
+        .loss { color: #ff4444; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 style="color: #00ff88;">PREMIUM AI</h2>
+        <p>Target Period: <span id="period" style="color: #ffcc00; font-weight: bold;">Connecting...</span></p>
+        <div id="prediction" class="btn">---</div>
+        <p style="font-size: 11px; color: #aaa;">3-LEVEL MARTINGALE RECOMMENDED</p>
+    </div>
+
+    <h3>SIGNAL HISTORY</h3>
+    <table>
+        <thead><tr><th>Period</th><th>Signal</th><th>Result</th></tr></thead>
+        <tbody id="history-body"></tbody>
+    </table>
+
+    <script>
+        function update() {
+            // ബ്രൗസർ ഡാറ്റ ബ്ലോക്ക് ചെയ്യുന്നത് ഒഴിവാക്കാൻ ടൈംസ്റ്റാമ്പ് ചേർക്കുന്നു
+            // ഇങ്ങനെ മാറ്റുക
+                 fetch('http://127.0.0.1:5000/signal')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.next_period) {
+                        document.getElementById('period').innerText = data.next_period;
+                        document.getElementById('prediction').innerText = data.prediction;
+                        document.getElementById('prediction').style.background = (data.class === "GREEN") ? "#00ff44" : "#ff4444";
+                        
+                        let html = "";
+                        if(data.history) {
+                            data.history.forEach(h => {
+                                let sClass = h.status.includes('WIN') ? 'win' : 'loss';
+                                html += <tr><td>${h.period}</td><td>${h.prediction}</td><td class="${sClass}">${h.status}</td></tr>;
+                            });
+                        }
+                        document.getElementById('history-body').innerHTML = html;
+                    }
+                })
+                .catch(e => console.log("Server waiting..."));
+        }
+        setInterval(update, 2000); // ഓരോ 2 സെക്കൻഡിലും പുതുക്കുന്നു
+        update();
+    </script>
+</body>
+</html>
