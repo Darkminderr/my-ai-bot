@@ -1,58 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SURE WIN AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
-        .box { border: 2px solid #00ff88; border-radius: 20px; padding: 20px; max-width: 350px; margin: 20px auto; background: #111; box-shadow: 0 0 20px #00ff88; }
-        .btn { font-size: 50px; font-weight: bold; padding: 20px; border-radius: 15px; margin: 20px 0; background: #00ff44; color: #000; display: block; }
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; background: #111; }
-        th, td { border: 1px solid #333; padding: 12px; font-size: 14px; text-align: center; }
-        th { color: #00ff88; }
-        .win { color: #00ff44; font-weight: bold; }
-        .loss { color: #ff4444; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="box">
-        <h2 style="color: #00ff88;">PREMIUM AI</h2>
-        <p>Target Period: <span id="period" style="color: #ffcc00; font-weight: bold;">Connecting...</span></p>
-        <div id="prediction" class="btn">---</div>
-        <p style="font-size: 11px; color: #aaa;">3-LEVEL MARTINGALE RECOMMENDED</p>
-    </div>
+from flask import Flask, jsonify, render_template
+from datetime import datetime
+import math
 
-    <h3>SIGNAL HISTORY</h3>
-    <table>
-        <thead><tr><th>Period</th><th>Signal</th><th>Result</th></tr></thead>
-        <tbody id="history-body"></tbody>
-    </table>
+app = Flask(__name__)
 
-    <script>
-        function update() {
-            // ശ്രദ്ധിക്കുക: ഇവിടെ '/signal' എന്ന് മാത്രം മതി
-            fetch('/signal')
-                .then(res => res.json())
-                .then(data => {
-                    if(data.next_period) {
-                        document.getElementById('period').innerText = data.next_period;
-                        document.getElementById('prediction').innerText = data.prediction;
-                        document.getElementById('prediction').style.background = (data.class === "GREEN") ? "#00ff44" : "#ff4444";
-                        
-                        let html = "";
-                        if(data.history) {
-                            data.history.forEach(h => {
-                                let sClass = h.status.includes('WIN') ? 'win' : 'loss';
-                                html += <tr><td>${h.period}</td><td>${h.prediction}</td><td class="${sClass}">${h.status}</td></tr>;
-                            });
-                        }
-                        document.getElementById('history-body').innerHTML = html;
-                    }
-                })
-                .catch(e => console.log("Waiting for signals..."));
-        }
-        setInterval(update, 2000);
-        update();
-    </script>
-</body>
-</html>
+def get_raja_5min_mining():
+    now = datetime.now()
+    # 5 മിനിറ്റ് വിംഗോ പീരിയഡ് ഐഡി നിർമ്മാണം
+    total_min = now.hour * 60 + now.minute
+    period_count = total_min // 5+1
+    period_id = now.strftime("%Y%m%d1000") + str(1000 + period_count)
+    
+    # --- ADVANCED DATA MINING LOGIC ---
+    # പീരിയഡ് നമ്പറിലെ അക്കങ്ങളുടെ സ്വാധീനം അളക്കുന്നു (Weighted Digits)
+    p_str = str(period_id)
+    d1 = int(p_str[-1])
+    d2 = int(p_str[-2])
+    d3 = int(p_str[-3])
+    
+    # 3-ലെവൽ വിന്നിംഗിനായി നമ്പറുകളുടെ തീവ്രത കണക്കാക്കുന്നു
+    # കൂടുതൽ പ്രിസിഷൻ കിട്ടാൻ പ്രൈം നമ്പറുകൾ (7, 3) ഉപയോഗിച്ചുള്ള മൈനിംഗ്
+    mining_val = (d1 * 7) + (d2 * 3) + (d3 * 1)
+    
+    # ലളിതമായ ശരാശരിക്ക് പകരം മോഡുലോ ലോജിക് ഉപയോഗിക്കുന്നു
+    if (mining_val % 10) >= 5:
+        prediction, cls = "BIG", "big-glow"
+    else:
+        prediction, cls = "SMALL", "small-glow"
+        
+    return {
+        "period": period_id,
+        "prediction": prediction,
+        "class": cls
+    }
+
+@app.route("/api/signal")
+def signal():
+    return jsonify(get_raja_5min_mining())
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=True)
