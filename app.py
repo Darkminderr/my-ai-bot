@@ -1,37 +1,41 @@
 from flask import Flask, jsonify, render_template
-from datetime import datetime
-import math
+from datetime import datetime, timedelta
+from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(name)
+CORS(app)
 
 def get_raja_5min_mining():
-    now = datetime.now()
-    # 5 മിനിറ്റ് വിംഗോ പീരിയഡ് ഐഡി നിർമ്മാണം
-    total_min = now.hour * 60 + now.minute
-    period_count = total_min // 5+1
-    period_id = now.strftime("%Y%m%d1000") + str(1000 + period_count)
+    # Render സെർവർ സമയം ഇന്ത്യൻ സമയത്തേക്ക് (IST) മാറ്റുന്നു (UTC + 5:30)
+    ist_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
+    
+    # പീരിയഡ് ഐഡി നിർമ്മാണം (5 മിനിറ്റ് ഇന്റർവെൽ)
+    total_min = ist_now.hour * 60 + ist_now.minute
+    # അടുത്ത പീരിയഡ് കാണിക്കാൻ + 1 ചേർക്കുന്നു
+    period_count = (total_min // 5) + 1 
+    
+    # പീരിയഡ് ഐഡി ഫോർമാറ്റ്: YYYYMMDD1000 + പീരിയഡ് നമ്പർ
+    period_id = ist_now.strftime("%Y%m%d1000") + str(1000 + period_count)
     
     # --- ADVANCED DATA MINING LOGIC ---
-    # പീരിയഡ് നമ്പറിലെ അക്കങ്ങളുടെ സ്വാധീനം അളക്കുന്നു (Weighted Digits)
     p_str = str(period_id)
-    d1 = int(p_str[-1])
-    d2 = int(p_str[-2])
-    d3 = int(p_str[-3])
+    # പീരിയഡിന്റെ അവസാന 3 അക്കങ്ങളെ വിശകലനം ചെയ്യുന്നു
+    d1, d2, d3 = int(p_str[-1]), int(p_str[-2]), int(p_str[-3])
     
-    # 3-ലെവൽ വിന്നിംഗിനായി നമ്പറുകളുടെ തീവ്രത കണക്കാക്കുന്നു
-    # കൂടുതൽ പ്രിസിഷൻ കിട്ടാൻ പ്രൈം നമ്പറുകൾ (7, 3) ഉപയോഗിച്ചുള്ള മൈനിംഗ്
+    # 3-ലെവൽ വിജയം ലക്ഷ്യമിട്ടുള്ള മൈനിംഗ് വാല്യൂ
     mining_val = (d1 * 7) + (d2 * 3) + (d3 * 1)
     
-    # ലളിതമായ ശരാശരിക്ക് പകരം മോഡുലോ ലോജിക് ഉപയോഗിക്കുന്നു
     if (mining_val % 10) >= 5:
-        prediction, cls = "BIG", "big-glow"
+        prediction = "BIG"
+        color_class = "BIG"
     else:
-        prediction, cls = "SMALL", "small-glow"
+        prediction = "SMALL"
+        color_class = "SMALL"
         
     return {
         "period": period_id,
         "prediction": prediction,
-        "class": cls
+        "class": color_class
     }
 
 @app.route("/api/signal")
@@ -42,5 +46,6 @@ def signal():
 def index():
     return render_template("index.html")
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if name == "main":
+    # ക്ലൗഡിൽ റൺ ചെയ്യാൻ 0.0.0.0 നിർബന്ധമാണ്
+    app.run(host='0.0.0.0', port=5000)
