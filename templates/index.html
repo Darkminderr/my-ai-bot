@@ -1,46 +1,71 @@
-from flask import Flask, jsonify, render_template
-from datetime import datetime
-import math
-
-app = Flask(__name__)
-
-def get_raja_5min_mining():
-    now = datetime.now()
-    # 5 മിനിറ്റ് വിംഗോ പീരിയഡ് ഐഡി നിർമ്മാണം
-    total_min = now.hour * 60 + now.minute
-    period_count = total_min // 5+1
-    period_id = now.strftime("%Y%m%d1000") + str(1000 + period_count)
-    
-    # --- ADVANCED DATA MINING LOGIC ---
-    # പീരിയഡ് നമ്പറിലെ അക്കങ്ങളുടെ സ്വാധീനം അളക്കുന്നു (Weighted Digits)
-    p_str = str(period_id)
-    d1 = int(p_str[-1])
-    d2 = int(p_str[-2])
-    d3 = int(p_str[-3])
-    
-    # 3-ലെവൽ വിന്നിംഗിനായി നമ്പറുകളുടെ തീവ്രത കണക്കാക്കുന്നു
-    # കൂടുതൽ പ്രിസിഷൻ കിട്ടാൻ പ്രൈം നമ്പറുകൾ (7, 3) ഉപയോഗിച്ചുള്ള മൈനിംഗ്
-    mining_val = (d1 * 7) + (d2 * 3) + (d3 * 1)
-    
-    # ലളിതമായ ശരാശരിക്ക് പകരം മോഡുലോ ലോജിക് ഉപയോഗിക്കുന്നു
-    if (mining_val % 10) >= 5:
-        prediction, cls = "BIG", "big-glow"
-    else:
-        prediction, cls = "SMALL", "small-glow"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAJA 5M ULTRA MINER</title>
+    <style>
+        :root {
+            --bg: #040d04;
+            --card: #0a1a0a;
+            --neon: #00ff88;
+        }
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; overflow: hidden;
+        }
+        .container {
+            background: var(--card);
+            padding: 40px; border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.1);
+            width: 320px; text-align: center;
+        }
+        .header { color: var(--neon); font-weight: bold; letter-spacing: 3px; font-size: 14px; margin-bottom: 20px; }
+        .period-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; margin-bottom: 20px; }
+        .period-box b { font-size: 20px; letter-spacing: 1px; }
         
-    return {
-        "period": period_id,
-        "prediction": prediction,
-        "class": cls
-    }
+        #res { 
+            font-size: 70px; font-weight: 900; padding: 30px; 
+            border-radius: 25px; margin: 25px 0; transition: 0.5s;
+        }
+        .big-glow { color: #00ff88; text-shadow: 0 0 30px #00ff88; border: 2px solid #00ff88; }
+        .small-glow { color: #ff3366; text-shadow: 0 0 30px #ff3366; border: 2px solid #ff3366; }
+        
+        .strategy { font-size: 11px; color: #668866; margin-top: 20px; line-height: 1.6; }
+        .status { font-size: 10px; margin-top: 15px; color: var(--neon); opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"> 5M AI MINER</div>
+        <div class="period-box">
+            <div style="font-size: 10px; color: #557755; margin-bottom: 5px;">ACTIVE PERIOD</div>
+            <b id="period">-------</b>
+        </div>
+        <div id="res">...</div>
+        <div class="strategy">
+            <b>SAFE 3-LEVEL PLAN</b><br>
+            L1: 10 | L2: 30 | L3: 90| L4: 200| L5: 420| L6: 890| L7: 1950<br>
+            <span style="color: var(--neon)">Mining in Progress...</span>
+        </div>
+        <div class="status" id="timer">Syncing with Raja Server...</div>
+    </div>
 
-@app.route("/api/signal")
-def signal():
-    return jsonify(get_raja_5min_mining())
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    <script>
+        function updateSignal() {
+            fetch('/api/signal').then(r => r.json()).then(data => {
+                document.getElementById('period').innerText = data.period;
+                const box = document.getElementById('res');
+                box.innerText = data.prediction;
+                box.className = data.class;
+            }).catch(e => console.log("Connection lost..."));
+        }
+        setInterval(updateSignal, 5000);
+        updateSignal();
+    </script>
+</body>
+</html>
