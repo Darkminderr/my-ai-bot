@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ULTRA AI - 1 MIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; 
+        }
+        .box { 
+            border: 2px solid #00ff88; border-radius: 25px; padding: 30px; 
+            width: 320px; background: #111; 
+            box-shadow: 0 0 35px rgba(0, 255, 136, 0.4); text-align: center;
+        }
+        h2 { color: #00ff88; margin-bottom: 20px; letter-spacing: 1px; font-size: 24px; }
+        #period { color: #ffcc00; font-weight: bold; font-size: 19px; }
+        
+        .prediction-btn { 
+            font-size: 55px; font-weight: 900; padding: 25px; 
+            border-radius: 20px; margin: 25px 0; background: #222; 
+            color: #fff; display: block; border: none;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .martingale-hint { font-size: 11px; color: #00ff88; font-weight: bold; margin-bottom: 5px; }
+        .footer-info { font-size: 10px; color: #444; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>1-MIN PREMIUM AI</h2>
+        <p style="color: #ccc; font-size: 14px;">Target Period:</p>
+        <div id="period">SYNCING...</div>
+        
+        <div id="prediction" class="prediction-btn">---</div>
+        
+        <div class="martingale-hint">3-LEVEL MARTINGALE RECOMMENDED</div>
+        <div class="footer-info">DATA MINING SYSTEM: ACTIVE (V4.2)</div>
+    </div>
+
+    <script>
+        function updateSignal() {
+            fetch('/signal')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.next_period) {
+                        document.getElementById('period').innerText = data.next_period;
+                        const predDiv = document.getElementById('prediction');
+                        predDiv.innerText = data.prediction;
+                        
+                        // കളർ സിസ്റ്റം അപ്‌ഡേറ്റ്
+                        if(data.class === "GREEN") {
+                            predDiv.style.background = "#00ff44";
+                            predDiv.style.color = "#000";
+                            predDiv.style.boxShadow = "0 0 25px #00ff44";
+                        } else {
+                            predDiv.style.background = "#ff4444";
+                            predDiv.style.color = "#fff";
+                            predDiv.style.boxShadow = "0 0 25px #ff4444";
+                        }
+                    }
+                })
+                .catch(e => console.log("Connection lost, retrying..."));
+        }
+        
+        // ഓരോ 2 സെക്കൻഡിലും റീഫ്രഷ് ചെയ്യുന്നു
+        setInterval(updateSignal, 2000);
+        updateSignal();
+    </script>
+</body>
+</html>
